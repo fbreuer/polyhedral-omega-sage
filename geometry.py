@@ -151,20 +151,18 @@ class SymbolicCone(collections.Hashable):
         o = self.openness
         k = self.dimension
         lambd = len(V[0]) - 1 # index of last coordinate
-        # v = lambda j: q - q[lambd]/(V[j][lambd]) * V[j] ## which sign here??? abs on q[lambd]??
-        w = lambda j: svv(q, msv(-q[lambd]/(V[j][lambd]), V[j])) ## which sign here??? abs on q[lambd]??
+        w = lambda j: svv(q, msv(-q[lambd]/(V[j][lambd]), V[j])) # q - q[lambd]/(V[j][lambd]) * V[j]
+        sgqn = 1 if q[lambd] >= 0 else -1
 
         def ghat(i,j):
             if i == j: # TODO: check if this makes sense for e == 1 as well
                 if q[lambd] > 0 or q[lambd] == 0:
-                    #return -V[j]
-                    return msv(-1,V[j])
+                    return msv(-1,V[j]) # -V[j]
                 else:
                     return V[j]
             else:
-                #return sgn(V[j][lambd]) * (V[j][lambd] * V[i] - V[i][lambd] * V[j]) # warning: check the first case if q_\lambd = 0
-                return msv(sgn(V[j][lambd]), svv(msv(V[j][lambd], V[i]), msv(-V[i][lambd], V[j]))) # warning: check the first case if q_\lambd = 0
-        g = lambda i, j: ghat(i,j)[:-1] # we drop the last coordinate, which means we take the first lambda = len(V[0]) - 1
+                return msv(sgqn, svv( msv(V[i][lambd], V[j]), msv(-V[j][lambd], V[i]))) # sg(qn) * ( V[i][lambd] * V[j] - V[j][lambd] * V[i] )
+        g = lambda i, j: ghat(i,j)[:-1] # we drop the last coordinate
         if not equality:
             G = lambda j: ( g(i,j) for i in xrange(k) )
         else:
