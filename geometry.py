@@ -164,18 +164,18 @@ class SymbolicCone(collections.Hashable):
                 return msv(sgqn, svv( msv(V[i][lambd], V[j]), msv(-V[j][lambd], V[i]))) # sg(qn) * ( V[i][lambd] * V[j] - V[j][lambd] * V[i] )
         g = lambda i, j: ghat(i,j)[:-1] # we drop the last coordinate
         if not equality:
-            G = lambda j: ( g(i,j) for i in xrange(k) )
+            G = lambda j: prim(( g(i,j) for i in xrange(k) ))
         else:
-            G = lambda j: ( g(i,j) for i in xrange(k) if j != i )
+            G = lambda j: prim(( g(i,j) for i in xrange(k) if j != i ))
         def _o(j):
             if equality: # drop j-th element
                 return o[:j] + o[j+1:]
             else: # replace j-th element with zero
                 return o[:j] + (0,) + o[j+1:]
         def Bplus():
-            return CombinationOfCones.sum(( SymbolicCone(prim(G(j)), w(j)[:-1], _o(j)) for j in xrange(k) if V[j][lambd] > 0 ))
+            return CombinationOfCones.sum(( SymbolicCone(G(j), w(j)[:-1], _o(j)) for j in xrange(k) if V[j][lambd] > 0 ))
         def Bminus():
-            return CombinationOfCones.sum(( SymbolicCone(prim(G(j)), w(j)[:-1], _o(j)) for j in xrange(k) if V[j][lambd] < 0 ))
+            return CombinationOfCones.sum(( SymbolicCone(G(j), w(j)[:-1], _o(j)) for j in xrange(k) if V[j][lambd] < 0 ))
         def Cprime():
             return CombinationOfCones(SymbolicCone(prim([v[:-1] for v in V]), q[:-1], o))
 
