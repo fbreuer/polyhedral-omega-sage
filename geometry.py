@@ -152,7 +152,7 @@ class SymbolicCone(collections.Hashable):
         k = self.dimension
         lambd = len(V[0]) - 1 # index of last coordinate
         # v = lambda j: q - q[lambd]/(V[j][lambd]) * V[j] ## which sign here??? abs on q[lambd]??
-        v = lambda j: svv(q, msv(-q[lambd]/(V[j][lambd]), V[j])) ## which sign here??? abs on q[lambd]??
+        w = lambda j: svv(q, msv(-q[lambd]/(V[j][lambd]), V[j])) ## which sign here??? abs on q[lambd]??
 
         def ghat(i,j):
             if i == j: # TODO: check if this makes sense for e == 1 as well
@@ -175,11 +175,11 @@ class SymbolicCone(collections.Hashable):
             else: # replace j-th element with zero
                 return o[:j] + (0,) + o[j+1:]
         def Bplus():
-            return CombinationOfCones.sum(( SymbolicCone(prim(G(j)), v(j)[:-1], _o(j)) for j in xrange(k) if V[j][lambd] > 0 ))
+            return CombinationOfCones.sum(( SymbolicCone(prim(G(j)), w(j)[:-1], _o(j)) for j in xrange(k) if V[j][lambd] > 0 ))
         def Bminus():
-            return CombinationOfCones.sum(( SymbolicCone(prim(G(j)), v(j)[:-1], _o(j)) for j in xrange(k) if V[j][lambd] < 0 ))
+            return CombinationOfCones.sum(( SymbolicCone(prim(G(j)), w(j)[:-1], _o(j)) for j in xrange(k) if V[j][lambd] < 0 ))
         def Cprime():
-            return CombinationOfCones(SymbolicCone(prim([w[:-1] for w in V]), q[:-1], o))
+            return CombinationOfCones(SymbolicCone(prim([v[:-1] for v in V]), q[:-1], o))
 
         n_up = len([Vj for Vj in V if Vj[lambd] > 0])
         n_down = len([Vj for Vj in V if Vj[lambd] < 0])
