@@ -202,30 +202,28 @@ class SymbolicCone(collections.Hashable):
         """
         k = self.dimension
         d = self.ambient_dimension
-        # note: in Sage the Smith form is UVW = S, whereas in the draft we use V=USW.
         V = self.generator_matrix()
         q = vector(self.apex,QQ)
         p = vector([0 for i in range(d)],ZZ)
-        if k < d:
+        if k < d: # this is only relevant if we had equality constraints during elimination
             # find an integer point in the affine span
             A,b = self.inequality_description_of_affine_hull()
             p = solve_linear_equation_system_over_integers(A,b)
             if not is_integral(p):
                 return []
+        # note: in Sage the Smith form is UVW = S, whereas in the draft we use V=USW.
         S,Uinv,Winv = V.smith_form()
         s = [S[i][i] for i in xrange(k)] # we don't need the last d-k 1s: + [1 for i in range(d-k)]
-        #T = diagonal_matrix([1/s[i] for i in xrange(k)]).augment(zero_matrix(QQ,k,d-k))
-        qhat = Uinv * (q - p)
-        _L = CartesianProduct( *[xrange(s[i]) for i in xrange(k)] )
-        #WinvT = Winv * T  
         sk = s[k-1]
         sprime = [Integer(sk / si) for si in s]
-        Wprime = tuple([tuple([ (Winv[j,i] * sprime[i]) for i in xrange(k)]) for j in xrange(k)])
-        qtrans = [ sum([ - Wprime[j][i] * qhat[i]  for i in xrange(k)]) for j in xrange(k) ]
+        qhat = Uinv * (q - p)
+        Wprime = tuple((tuple(( Winv[j,i] * sprime[i] for i in xrange(k))) for j in xrange(k))) # Wprime = Winv * Sprime, in the paper
+        qtrans = [ sum([ - Wprime[j][i] * qhat[i]  for i in xrange(k)]) for j in xrange(k) ] # qtrans = - Winv * Sprime * qhat, in the paper
         qfrac = fract_simple(qtrans)
         qint = [ floor(qi) for qi in qtrans ]
         qsummand = tuple((Integer(qi) for qi in sk * q + V * vector(qfrac) )) # this vector is integral
         o = [ (self.openness[j] if qfrac[j] == 0 else 0) for j in xrange(k) ]
+        P = CartesianProduct( *[xrange(s[i]) for i in xrange(k)] )
         def _transform_integral(z):
             innerRes = []
             j = 0
@@ -253,8 +251,8 @@ class SymbolicCone(collections.Hashable):
                     j += 1
                 outerRes.append(outer) # outerRes is an integral vector
             return tuple(( (ai + bi).divide_knowing_divisible_by(sk) for (ai,bi) in zip(outerRes,qsummand) ))
-        result = [ _transform_integral(v) for v in _L ]
-        return result
+        L = [ _transform_integral(v) for v in P ]
+        return L
 
     def inequality_description_of_affine_hull(self):
         k = self.dimension
