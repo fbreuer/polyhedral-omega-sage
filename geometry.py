@@ -237,7 +237,7 @@ class SymbolicCone(collections.Hashable):
         qtrans = [ sum([ - Wprime[j][i] * qhat[i]  for i in xrange(k)]) for j in xrange(k) ]
         qfrac = fract_simple(qtrans)
         qint = [ floor(qi) for qi in qtrans ]
-        qsummand = q + (1/sk) * V * vector(qfrac) # this vector is rational
+        qsummand = tuple((Integer(qi) for qi in sk * q + V * vector(qfrac) )) # this vector is integral
         o = [ (self.openness[j] if qfrac[j] == 0 else 0) for j in xrange(k) ]
         def _transform_integral(z):
             innerRes = []
@@ -264,8 +264,8 @@ class SymbolicCone(collections.Hashable):
                 for innerResi in innerRes:
                     outer += V[l,j] * innerResi
                     j += 1
-                outerRes.append(outer / sk) # outerRes is a rational vector in general
-            return svv(outerRes,qsummand)
+                outerRes.append(outer) # outerRes is an integral vector
+            return tuple(( (ai + bi).divide_knowing_divisible_by(sk) for (ai,bi) in zip(outerRes,qsummand) ))
         result = [ _transform_integral(v) for v in _L ]
         return result
 
