@@ -143,9 +143,7 @@ class SymbolicCone(collections.Hashable):
         Arguments:
             equality: True if we intersect with hyperplane instead of half-space.
         """
-        #print "elim_last_coord", self
         # abbreviate variables
-        #print "eliminate last coordinate of cone:", self
         V = self.generators
         q = self.apex
         o = self.openness
@@ -170,7 +168,7 @@ class SymbolicCone(collections.Hashable):
                 return o[:j] + (0,) + o[j+1:]
         def Bplus():
             return CombinationOfCones.sum(( SymbolicCone(G(j), w(j)[:-1], _o(j)) for j in xrange(k) if V[j][lambd] > 0 ))
-        def Bminus():
+        def Bminus(): # the Bminus in the paper is this Bminus + Cprime
             return CombinationOfCones.sum(( SymbolicCone(G(j), w(j)[:-1], _o(j)) for j in xrange(k) if V[j][lambd] < 0 ))
         def Cprime():
             return CombinationOfCones(SymbolicCone(prim([v[:-1] for v in V]), q[:-1], o))
@@ -183,12 +181,7 @@ class SymbolicCone(collections.Hashable):
                 B = Bplus()
             else: # if q[lambd] >= 0
                 B = Bminus() + Cprime()
-            # optimization: if we have a choice, take decomposition with fewer cones
-            #    else: # there are both up and down Vjs
-            #        if n_up <= n_down:
-            #            B = Bplus()
-            #        else:
-            #            B = Bminus() + Cprime()
+            # TODO: optimization: if we have a choice, take decomposition with fewer cones
         else: # if equality
             if q[lambd] < 0 or (q[lambd] == 0 and exists(range(k),lambda j: V[j][lambd] > 0)[0]):
                 B = Bplus()
