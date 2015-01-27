@@ -156,10 +156,7 @@ class SymbolicCone(collections.Hashable):
 
         def g(i,j):
             if i == j: # TODO: check if this makes sense for e == 1 as well
-                if q[lambd] > 0 or q[lambd] == 0:
-                    return msv(-1,V[j]) # -V[j]
-                else:
-                    return V[j]
+                return msv(-1,V[j]) if q[lambd] >= 0 else V[j]
             else:
                 return msv(sgqn, svv( msv(V[i][lambd], V[j]), msv(-V[j][lambd], V[i]))) # sg(qn) * ( V[i][lambd] * V[j] - V[j][lambd] * V[i] )
         if not equality:
