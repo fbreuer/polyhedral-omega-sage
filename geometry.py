@@ -148,15 +148,15 @@ class SymbolicCone(collections.Hashable):
         q = self.apex
         o = self.openness
         k = self.dimension
-        lambd = len(V[0]) - 1 # index of last coordinate
-        w = lambda j: svv(q, msv(-q[lambd]/(V[j][lambd]), V[j])) # q - q[lambd]/(V[j][lambd]) * V[j]
-        sgqn = 1 if q[lambd] >= 0 else -1
+        n = len(V[0]) - 1 # index of last coordinate
+        w = lambda j: svv(q, msv(-q[n]/(V[j][n]), V[j])) # q - q[n]/(V[j][n]) * V[j]
+        sgqn = 1 if q[n] >= 0 else -1
 
         def g(i,j):
             if i == j: # TODO: check if this makes sense for e == 1 as well
-                return msv(-1,V[j]) if q[lambd] >= 0 else V[j]
+                return msv(-1,V[j]) if q[n] >= 0 else V[j]
             else:
-                return msv(sgqn, svv( msv(V[i][lambd], V[j]), msv(-V[j][lambd], V[i]))) # sg(qn) * ( V[i][lambd] * V[j] - V[j][lambd] * V[i] )
+                return msv(sgqn, svv( msv(V[i][n], V[j]), msv(-V[j][n], V[i]))) # sg(qn) * ( V[i][n] * V[j] - V[j][n] * V[i] )
         if not equality:
             G = lambda j: prim(( g(i,j)[:-1] for i in xrange(k) ))
         else:
@@ -167,27 +167,27 @@ class SymbolicCone(collections.Hashable):
             else: # replace j-th element with zero
                 return o[:j] + (0,) + o[j+1:]
         def Bplus():
-            return CombinationOfCones.sum(( SymbolicCone(G(j), w(j)[:-1], _o(j)) for j in xrange(k) if V[j][lambd] > 0 ))
+            return CombinationOfCones.sum(( SymbolicCone(G(j), w(j)[:-1], _o(j)) for j in xrange(k) if V[j][n] > 0 ))
         def Bminus(): # the Bminus in the paper is this Bminus + Cprime
-            return CombinationOfCones.sum(( SymbolicCone(G(j), w(j)[:-1], _o(j)) for j in xrange(k) if V[j][lambd] < 0 ))
+            return CombinationOfCones.sum(( SymbolicCone(G(j), w(j)[:-1], _o(j)) for j in xrange(k) if V[j][n] < 0 ))
         def Cprime():
             return CombinationOfCones(SymbolicCone(prim([v[:-1] for v in V]), q[:-1], o))
 
-        n_up = len([Vj for Vj in V if Vj[lambd] > 0])
-        n_down = len([Vj for Vj in V if Vj[lambd] < 0])
+        n_up = len([Vj for Vj in V if Vj[n] > 0])
+        n_down = len([Vj for Vj in V if Vj[n] < 0])
         n_flat = k - n_up - n_down
         if not equality:
-            if q[lambd] < 0:
+            if q[n] < 0:
                 B = Bplus()
-            else: # if q[lambd] >= 0
+            else: # if q[n] >= 0
                 B = Bminus() + Cprime()
             # TODO: optimization: if we have a choice, take decomposition with fewer cones
         else: # if equality
-            if q[lambd] < 0 or (q[lambd] == 0 and exists(range(k),lambda j: V[j][lambd] > 0)[0]):
+            if q[n] < 0 or (q[n] == 0 and exists(range(k),lambda j: V[j][n] > 0)[0]):
                 B = Bplus()
-            elif q[lambd] > 0 or (q[lambd] == 0 and exists(range(k),lambda j: V[j][lambd] < 0)[0]):
+            elif q[n] > 0 or (q[n] == 0 and exists(range(k),lambda j: V[j][n] < 0)[0]):
                 B = Bminus()
-            else: # q[lambd] == 0 and forall(range(k), lambda j: V[j][lambd] == 0)[0]
+            else: # q[n] == 0 and forall(range(k), lambda j: V[j][n] == 0)[0]
                 B = Cprime()
 
         #print "intermediate result before flip", B
