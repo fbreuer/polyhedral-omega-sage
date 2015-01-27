@@ -154,7 +154,7 @@ class SymbolicCone(collections.Hashable):
         w = lambda j: svv(q, msv(-q[lambd]/(V[j][lambd]), V[j])) # q - q[lambd]/(V[j][lambd]) * V[j]
         sgqn = 1 if q[lambd] >= 0 else -1
 
-        def ghat(i,j):
+        def g(i,j):
             if i == j: # TODO: check if this makes sense for e == 1 as well
                 if q[lambd] > 0 or q[lambd] == 0:
                     return msv(-1,V[j]) # -V[j]
@@ -162,11 +162,10 @@ class SymbolicCone(collections.Hashable):
                     return V[j]
             else:
                 return msv(sgqn, svv( msv(V[i][lambd], V[j]), msv(-V[j][lambd], V[i]))) # sg(qn) * ( V[i][lambd] * V[j] - V[j][lambd] * V[i] )
-        g = lambda i, j: ghat(i,j)[:-1] # we drop the last coordinate
         if not equality:
-            G = lambda j: prim(( g(i,j) for i in xrange(k) ))
+            G = lambda j: prim(( g(i,j)[:-1] for i in xrange(k) ))
         else:
-            G = lambda j: prim(( g(i,j) for i in xrange(k) if j != i ))
+            G = lambda j: prim(( g(i,j)[:-1] for i in xrange(k) if j != i ))
         def _o(j):
             if equality: # drop j-th element
                 return o[:j] + o[j+1:]
