@@ -218,12 +218,34 @@ class SymbolicCone(collections.Hashable):
         sprime = [Integer(sk / si) for si in s]
         qhat = Uinv * (q - p)
         Wprime = tuple((tuple(( Winv[j,i] * sprime[i] for i in xrange(k))) for j in xrange(k))) # Wprime = Winv * Sprime, in the paper
+        # DEBUG: Wprimem = matrix(ZZ,Wprime) # same matrix as a Sage object
         qtrans = [ sum([ - Wprime[j][i] * qhat[i]  for i in xrange(k)]) for j in xrange(k) ] # qtrans = - Winv * Sprime * qhat, in the paper
         qfrac = fract_simple(qtrans)
         qint = [ floor(qi) for qi in qtrans ]
+        # DEBUG: qintv = vector(ZZ,qint)
         qsummand = tuple((Integer(qi) for qi in sk * q + V * vector(qfrac) )) # this vector is integral
+        # DEBUG: qsummandv = vector(ZZ,qsummand)
         o = [ (self.openness[j] if qfrac[j] == 0 else 0) for j in xrange(k) ]
         P = CartesianProduct( *[xrange(s[i]) for i in xrange(k)] )
+        # DEBUGGING:
+        # The following is a much cleaner implementation of transform_integral but takes 10 times as long.
+        # It is still useful for debugging. Requires the lines marked DEBUG above.
+        #
+        # def momod(i,o):
+        #     m = i % sk
+        #     if m == 0 and o:
+        #         return sk
+        #     return m
+        # def momod_v(v):
+        #     return vector(ZZ,( momod(vi,oi) for (vi,oi) in zip(v,o) ))
+        # def __transform_integral(x):
+        #     return tuple(( vi.divide_knowing_divisible_by(sk) for vi in V * momod_v( Wprimem * vector(ZZ,x) + qintv ) + qsummandv ))
+        # def transform_integral(x):
+        #     v = __transform_integral(x)
+        #     w = _transform_integral(x)
+        #     if v != w:
+        #         print "different results: ", v, w
+        #     return v
         def _transform_integral(z):
             innerRes = []
             j = 0
@@ -237,7 +259,7 @@ class SymbolicCone(collections.Hashable):
                     i += 1
                 inner += qj
                 inner = inner % sk
-                # inner has to be modified according to I
+                # inner has to be modified according to o
                 if inner == 0 and o[j]:
                     inner = sk
                 innerRes.append(inner)
