@@ -177,11 +177,10 @@ class SymbolicCone(collections.Hashable):
         n_down = len([Vj for Vj in V if Vj[n] < 0])
         n_flat = k - n_up - n_down
         if not equality:
-            if q[n] < 0:
+            if q[n] < 0 or (q[n] == 0 and n_up <= n_down and n_up >= 1): # optimization: if we have a choice, take decomposition with fewer cones
                 B = Bplus()
             else: # if q[n] >= 0
                 B = Bminus() + Cprime()
-            # TODO: optimization: if we have a choice, take decomposition with fewer cones
         else: # if equality
             if q[n] < 0 or (q[n] == 0 and exists(range(k),lambda j: V[j][n] > 0)[0]):
                 B = Bplus()
